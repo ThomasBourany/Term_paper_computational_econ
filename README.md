@@ -27,7 +27,8 @@ From Ljungqvist & Sargent, the method to solve this model is the following :
 1. Solve (11.6.4) for the terminal steady-state k that is associated with the permanent policy vector z=(g, tau_c, tau_k) i.e., find the solution of (11.6.7).
 2. Select a large time index S >> T and guess an initial consumption rate c0 . Compute u′(c0) and solve (11.6.1) for k1 .
 3. For t = 0, use (11.6.3) to solve for u′(ct+1). Then invert u′ and compute ct+1 . Use ( 11.6.1 ) to compute kt+2 .
-4. Iterate on step 3 to compute candidate values kˆt,t = 1,...,S. 5. Compute kˆS −k.
+4. Iterate on step 3 to compute candidate values kˆt,t = 1,...,S.
+5. Compute kˆS −k.
 6. If kˆS > k, raise c0 and compute a new kˆt,t = 1,...,S.
 7 . I f kˆ S < k , lower c 0 .
 8. In this way, search for a value of c0 that makes kˆS ≈ k .
