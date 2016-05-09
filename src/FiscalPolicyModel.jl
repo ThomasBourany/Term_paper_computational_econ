@@ -2,6 +2,7 @@
 
 module FiscalPolicyModel
 
+export Parameter, exovariable, endovariable, Imp_model, loop_c_k_path, shootingalgorithm, model_path
 
 using NLopt, PyPlot
 using Roots, Distributions
@@ -133,9 +134,10 @@ type Model
 	n::Int ## number of period in the model, including the S (adjustment)
 end
 
-function Imp_model(exo::Exovar, endo::Endovar, u::Function, deru::Function, invderu::Function, f::Function, derf::Function, p::Dict)
+function Imp_model(exo::Exovar, endo::Endovar, p::Dict)
 	n = length(exo.g)
-	return Model(exo, endo, u, deru,invderu, f, derf, p, n)
+#	u, deru, invderu, f, derf
+	return Model(exo, endo, u, deru, invderu, f, derf, p, n)
 end
 
 ## All the following functions are part of the "final" shooting algorithm. That is why we start 
@@ -418,7 +420,7 @@ signif = 10.0^(-i)
 end 
 end
 
-println("The shooting algorithm needs 3 loops (at 4 different scales (1e-3, 1e-6, 1e-9, 1e-12) to get the right c0 = $c0")
+println("The shooting algorithm needs 4 loops (at 4 different scales (1e-3, 1e-6, 1e-9, 1e-12) to get the right c0 = $c0")
 println("The obtained final capital is Ks = $ks, which is close to the true kbar = $kbar at the $signif level")
 return c0, ks, kbar, signif
 end
@@ -443,9 +445,36 @@ k_temp = path[1]
 c_temp = path[2]
 equilibriumquantities(m, c_temp, k_temp)
 
+println("The path of the endogenous variables has been updated, following the fiscal policy shocks")
+
+	else
+	println("The path of the endogenous variables has not been updated, because the shooting algorithm did not find an accurate optimal path")
+
 	end 
 
+return nothing 
+#return m 
+
 end
+
+
+
+	function runAll()
+	#	println("running tests:")
+	#	include("test/runtests.jl")
+	#	println("")
+		println("Result of the shooting algorithm:")
+		#shootingalgorithm(m)
+		println("")
+		ok = input("enter y to close this session.")
+		if ok == "y"
+			quit()
+		end
+	end
+
+
+
+
 
 				end 
 

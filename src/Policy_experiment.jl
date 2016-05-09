@@ -5,6 +5,8 @@ module Policy_experiment
 ############################################ Preliminary
 ############################################
 ### Try the normal steady state value, without policy experiment. 
+include("src/FiscalPolicyModel.jl")
+using FiscalPolicyModel
 
 g = 0.2*ones(20)
 tauk=zeros(20)
@@ -14,10 +16,11 @@ taun=zeros(20)
 p=Parameter()
 exo=exovariable(g,tauk,tauc,taun,p)
 endo=endovariable(exo)
-m=Imp_model(exo, endo, u, deru, invderu, f, derf, p)
-
+m=Imp_model(exo, endo, p)
 #Modify all the variables of the model, following the exogenous variations. 
 model_path(m, 1e-4)
+
+mref=Imp_model(m.exo, m.endo, m.p)
 
 
 ############################################
@@ -145,20 +148,7 @@ end
 #### Plot the IRF, for the usual variables 
 
 
-g = 0.2*ones(20)
-tauk=zeros(20)
-tauc=zeros(20)
-taun=zeros(20)
-
-p=Parameter()
-exo=exovariable(g,tauk,tauc,taun,p)
-endo=endovariable(exo)
-m=Imp_model(exo, endo, u, deru, invderu, f, derf, p)
-
 #Modify all the variables of the model, following the exogenous variations. 
-model_path(m, 1e-4)
-
-mref=Imp_model(exo, endo, u, deru, invderu, f, derf, p)
 
 
 fprod=zeros(m.n)
