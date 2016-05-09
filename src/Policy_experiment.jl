@@ -162,6 +162,11 @@ end
 
 end 
 
+#### Draw the graph
+graph1(mref)
+graph2(mref)
+
+
 ############################################
 #### Plot the IRF, for the usual variables 
 
@@ -348,7 +353,7 @@ graph3(m4, mref, g)
 ############################################ Fifth policy shock
 ## White-noisy government spending
 
-g=[rand(10);0.2*ones(10)]
+g=[0.7rand(19);0.2]
 
 tauk=zeros(20)
 tauc=zeros(20)
@@ -364,60 +369,25 @@ model_path(m5, 1e-6)
 graph3(m5, mref, g)
 
 
-#### other drafts, to be cleaned
 
-y=[0.001n for n in 1:1000]
+############################################ Seventh part, 
+############################################ Sixth policy shock
+## White-noisy consumption tax
 
-
-
-# look at the path of capital
-
-
-x=[n for n in 1:m.n]
-
-fk=zeros(m.n)
-for j in 1:m.n
-fk[j]=m.derf(k_temp[j], m.p)
-end
+tauc=[0.7rand(19);0.2]
+g = 0.2*ones(20)
+tauk=zeros(20)
+taun=zeros(20)
 
 
+p=Parameter()
+exo=exovariable(g,tauk,tauc,taun,p)
+endo=endovariable(exo)
+m6=Imp_model(exo, endo, p)
+model_path(m6, 1e-6)
 
-c_temp3 = m.f(kbar, m.p) + (1-m.p["delta"])*kbar -kbar - g[end]
-
-c_temp2 = zeros(m.n)
-for j in 1:m.n-1
-c_temp2[j]=m.f(k_temp[j], m.p) + (1-m.p["delta"])*k_temp[j] -k_temp[j+1] -g[j]
-end
-
-invest = zeros(m.n)
-for j in 1:m.n-1
-invest[j]=k_temp[j+1] - (1-m.p["delta"])*k_temp[j]
-end
+graph3(m6, mref, tauc)
 
 
 
-#fig,axes = subplots(1,4,figsize=(10,5))
-#ax = axes[1,1]
-plot(x, k_temp)
-plot(x, c_temp)
-#plot(x, c_temp2)
-plot(x, uc_temp)
-plot(x, fk)
 
-
-plot(x, fkap)
-plot(x, g)
-plot(x, invest)
-plot(x, c_temp)
-
-
-ax = axes[1,2]
-ax[:plot](x, c_temp)
-ax = axes[1,3]
-axes[:plot](x, uc_temp)
-
-ax = axes[1,4]
-axes[:plot](x, fk)
-
-
-end 

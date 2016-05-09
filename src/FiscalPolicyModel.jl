@@ -149,9 +149,14 @@ taukbar = m.exo.tauk[end]
 sol(k) = m.p["delta"] + (m.p["rho"]/(1-taukbar)) - m.derf(k,m.p)
 kbar = fzero(k->sol(k),[m.p["lb"],m.p["ub"]])
 ## The kbar satisfy the equation XX of the paper. 
-## We assign this steady state value to the vector of endogenous variables
+
+sol2(k) = m.p["delta"] + m.p["rho"] - m.derf(k,m.p)
+kbar2 = fzero(k->sol2(k),[m.p["lb"],m.p["ub"]])
+# the kbar2 satisfy the golden rule, without tax. 
+
+## We assign the steady state value to the vector of endogenous variables
 m.endo.k[end] = kbar
-return nothing
+return kbar, kbar2
 end 
 
 
@@ -200,7 +205,7 @@ for i in 1:m.n
 #end
 
 ## Second compute the sequence of asset prices
-m.endo.q[i]=m.p["beta"]^i /(1+tc[i])
+m.endo.q[i]=(m.p["beta"]^i) *deru(c[i], m.p) /(1+tc[i])
 
 ## Third compute the rental rate of HH from capital
 m.endo.eta[i]= m.derf(m.endo.k[i],m.p)
@@ -282,8 +287,10 @@ end
 
 	function shootingalgorithm(m::Model)
 
-steadystate(m)
-kbar = m.endo.k[end]
+s = steadystate(m)
+kbarnt = s[2]  ## the steady state without tax as starting point (initial condition for k)
+kbar = s[1] ## the steady state with tax for the target of the algorithm 
+
 
 #################################################
 ############################ 1st scale
@@ -296,7 +303,7 @@ cbar_bis = zeros(1000)
 	for index in 1:1000
 c0=c0bis[index]
 # compute the 1000-paths of consumption and capital drawn from the loop of the model. 
-result = loop_c_k(m, c0, kbar)
+result = loop_c_k(m, c0, kbarnt)
 kbar_bis[index] = result[1]
 cbar_bis[index] = result[2]
 	end
@@ -328,7 +335,7 @@ cbar_ter = zeros(1000)
 c1=c1bis[index2]
 # again, compute the 1000-paths of consumption and capital drawn from the loop of the model
 # (with difference in initial condition much smaller than in the loop above). 
-result= loop_c_k(m, c1, kbar)
+result= loop_c_k(m, c1, kbarnt)
 kbar_ter[index2] = result[1]
 cbar_ter[index2] = result[2]
 	end 
@@ -358,7 +365,7 @@ cbar_quar = zeros(1000)
 c2=c2bis[index3]
 # again, compute the 1000-paths of consumption and capital drawn from the loop of the model
 # (with difference in initial condition again much smaller than in the loop above). 
-result= loop_c_k(m, c2, kbar)
+result= loop_c_k(m, c2, kbarnt)
 kbar_quar[index3] = result[1]
 cbar_quar[index3] = result[2]
 	end 
@@ -389,7 +396,7 @@ cbar_quin = zeros(1000)
 c3=c3bis[index4]
 # again, compute the 1000-paths of consumption and capital drawn from the loop of the model
 # (with difference in initial condition again much smaller than in the loop above). 
-result= loop_c_k(m, c3, kbar)
+result= loop_c_k(m, c3, kbarnt)
 kbar_quin[index4] = result[1]
 cbar_quin[index4] = result[2]
 	end 
@@ -427,6 +434,9 @@ end
 ### Compute the rest. 
 function model_path(m::Model, tol::Real=1e-6)
 
+s = steadystate(m)
+kbarnt = s[2]  ## the steady state without tax as starting point (initial condition for k)
+
 shooting = shootingalgorithm(m)
 
 c0 = shooting[1]
@@ -439,7 +449,7 @@ kbar = shooting[3]
 	## assign the new quantities & compute the equilibrium
 k_temp = zeros(m.n)
 c_temp = zeros(m.n)
-path= loop_c_k_path(m, c0, kbar)
+path= loop_c_k_path(m, c0, kbarnt)
 k_temp = path[1]	
 c_temp = path[2]
 equilibriumquantities(m, c_temp, k_temp)
