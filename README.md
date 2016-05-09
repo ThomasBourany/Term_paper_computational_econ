@@ -35,7 +35,13 @@ From Ljungqvist & Sargent, the method to solve this model is the following :
 equality.
 
 
-
+- This is only a draft, more documentation will be provided in the following days, about the following points
 - Why the "shooting algorithm?"
+- A description of the convergence of the algorithm (shown in the graphs 1, 2 and thoses accompanying the policy experiment) and its accuracy
+- A description of the implementation of "policy experiments" concerning spending and taxes, and computation of the path and its display in Impulse-Response function. 
+
+
+
+
  
 
