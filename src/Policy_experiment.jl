@@ -2,11 +2,14 @@
 
 module Policy_experiment
 
-############################################ Preliminary
-############################################
-### Try the normal steady state value, without policy experiment. 
 include("src/FiscalPolicyModel.jl")
 using FiscalPolicyModel
+using PyPlot
+
+
+############################################ Preliminary
+############################################
+### Compute the steady state value, without policy experiment. 
 
 g = 0.2*ones(20)
 tauk=zeros(20)
@@ -18,20 +21,22 @@ exo=exovariable(g,tauk,tauc,taun,p)
 endo=endovariable(exo)
 m=Imp_model(exo, endo, p)
 #Modify all the variables of the model, following the exogenous variations. 
-model_path(m, 1e-4)
+model_path(m, 1e-6)
 
 mref=Imp_model(m.exo, m.endo, m.p)
 
 
 ############################################
-### Plot of convergence of the shooting algorithm
+### Plot of convergence of the shooting algorithm, starting with initial condition below the steady state
+
+function graph1(m)
 shooting = shootingalgorithm(m)
 
 c0 = shooting[1]
 ks = shooting[2]
 kbar = shooting[3]
 
-c0_below=[0.1, 0.5, 0.6, 0.64, (1-1e-3)c0, (1-1e-4)c0, (1-1e-5)c0, (1-5*1e-6)c0, (1-4*1e-6)c0, (1-3*1e-6)c0, (1-2*1e-6)c0,  (1-1e-6)c0, (1-5*1e-7)c0, (1-2*1e-7)c0, (1-1e-7)c0, (1-5*1e-8)c0,(1-4*1e-8)c0, (1-3*1e-8)c0, (1-2*1e-8)c0, (1-1e-8)c0]
+c0_below=[0.1, 0.5, 0.9c0, 0.99c0, (1-1e-3)c0, (1-1e-4)c0, (1-1e-5)c0, (1-5*1e-6)c0, (1-4*1e-6)c0, (1-3*1e-6)c0, (1-2*1e-6)c0,  (1-1e-6)c0, (1-5*1e-7)c0, (1-2*1e-7)c0, (1-1e-7)c0, (1-5*1e-8)c0,(1-4*1e-8)c0, (1-3*1e-8)c0, (1-2*1e-8)c0, (1-1e-8)c0]
 
 # reminder truec0 = 0.64264525131
 x=[n for n in 1:m.n] ## periods of time
@@ -85,12 +90,24 @@ ax[:plot](x, c_temp, color=jet(index/length(c0_below)))
 end 
 	end
 #ax[:legend](loc="upper left")
+end 
+
 
 ############################################
-### From above
-c0_above=[0.95, 0.8, 0.7, 0.65, (1+1e-3)c0, (1+1e-4)c0, (1+1e-5)c0, (1+5*1e-6)c0, (1+4*1e-6)c0, (1+3*1e-6)c0, (1+2*1e-6)c0,  (1+1e-6)c0, (1+5*1e-7)c0, (1+2*1e-7)c0, (1+1e-7)c0, (1+5*1e-8)c0,(1+4*1e-8)c0, (1+3*1e-8)c0, (1+2*1e-8)c0, (1+1e-8)c0]
+### ### Plot of convergence, starting with initial condition above the steady state
 
-# reminder truec0 = 0.64264525131
+
+function graph2(m)
+
+shooting = shootingalgorithm(m)
+
+c0 = shooting[1]
+ks = shooting[2]
+kbar = shooting[3]
+
+c0_above=[0.95, 0.8, c0*1.1, c0*1.01, (1+1e-3)c0, (1+1e-4)c0, (1+1e-5)c0, (1+5*1e-6)c0, (1+4*1e-6)c0, (1+3*1e-6)c0, (1+2*1e-6)c0,  (1+1e-6)c0, (1+5*1e-7)c0, (1+2*1e-7)c0, (1+1e-7)c0, (1+5*1e-8)c0,(1+4*1e-8)c0, (1+3*1e-8)c0, (1+2*1e-8)c0, (1+1e-8)c0]
+
+# reminder true_c0 = 0.64264525131
 x=[n for n in 1:m.n] ## periods of time
 #plot(x, m.endo.k)
 
@@ -143,50 +160,105 @@ end
 
 	end
 
+end 
 
 ############################################
 #### Plot the IRF, for the usual variables 
 
+## Need to feed the function with a model with exogenous shocks and a reference model, without policy shocks. 
 
-#Modify all the variables of the model, following the exogenous variations. 
-
+function graph3(m, mref, tau =g)
 
 fprod=zeros(m.n)
 for j in 1:m.n
-fprod[j]=mref.f(m.endo.k[j], m.p)
+fprod[j]=m.f(m.endo.k[j], m.p)
 end
 
+fprodref=zeros(m.n)
+for j in 1:m.n
+fprodref[j]=m.f(mref.endo.k[j], m.p)
+end
+
+
+invest = zeros(m.n)
+for j in 1:m.n-1
+invest[j]=m.endo.k[j+1] - (1-m.p["delta"])*m.endo.k[j]
+end
+invest[m.n]=invest[m.n-1]
+
+investref = zeros(m.n)
+for j in 1:m.n-1
+investref[j]=mref.endo.k[j+1] - (1-mref.p["delta"])*mref.endo.k[j]
+end
+investref[m.n]=investref[m.n-1]
+
+
 x=[n for n in 1:m.n]
-plot(x, mref.endo.k)
-plot(x, mref.endo.c)
-plot(x, mref.exo.g)
-plot(x, fprod)
 
-
-fig,axes = subplots(2,3,figsize=(10,5))
+fig,axes = subplots(3,3)
 
 ax = axes[1,1]
+ax[:set_title]("Capital")
 ax[:plot](x, m.endo.k)
-ax[:plot](x, zeros(m.n))
+ax[:plot](x, mref.endo.k, "k--")
+
 ax = axes[1,2]
+ax[:set_title]("Consumption")
 ax[:plot](x, m.endo.c)
-ax[:plot](x, zeros(m.n))
+ax[:plot](x, mref.endo.c, "k--")
+
 ax = axes[1,3]
+ax[:set_ylim](-0.1, 0.6)
+if tau == g
+ax[:set_title]("Government spending")
 ax[:plot](x, m.exo.g)
-ax[:plot](x, zeros(m.n))
+ax[:plot](x, mref.exo.g, "k--")
+elseif tau == tauc
+ax[:set_title]("Consumption tax")
+ax[:plot](x, m.exo.tauc)
+ax[:plot](x, mref.exo.tauc, "k--")
+elseif tau == tauk
+ax[:set_title]("Capital tax")
+ax[:plot](x, m.exo.tauk)
+ax[:plot](x, mref.exo.tauk, "k--")
+end 
+
 ax = axes[2,1]
-ax[:plot](x, fprod)
-ax[:plot](x, zeros(m.n))
+ax[:set_title]("Pretax-price")
+ax[:plot](x, m.endo.q)
+ax[:plot](x, mref.endo.q, "k--")
+
 ax = axes[2,2]
+ax[:set_title]("Gross-interest rate")
 ax[:plot](x, m.endo.R)
-ax[:plot](x, zeros(m.n))
+ax[:plot](x, mref.endo.R, "k--")
+
 ax = axes[2,3]
+ax[:set_title]("Rental price of capital")
 ax[:plot](x, m.endo.eta)
-ax[:plot](x, zeros(m.n))
+ax[:plot](x, mref.endo.eta, "k--")
+
+
+ax = axes[3,1]
+ax[:set_title]("Production y")
+ax[:plot](x, fprod)
+ax[:plot](x, fprodref, "k--")
+
+ax = axes[3,2]
+ax[:set_title]("Investment")
+ax[:plot](x, invest)
+ax[:plot](x, investref, "k--")
+
+ax = axes[3,3]
+ax[:set_title]("Wage")
+ax[:plot](x, m.endo.w)
+ax[:plot](x, mref.endo.w, "k--")
+
+
 
 fig[:canvas][:draw]()
 
-
+end 
 
 ############################################ Second part, 
 ############################################ First policy shock
@@ -200,44 +272,10 @@ g = [0.2*ones(10);0.4*ones(10)]
 p=Parameter()
 exo=exovariable(g,tauk,tauc,taun,p)
 endo=endovariable(exo)
-m=Imp_model(exo, endo, u, deru, invderu, f, derf, p)
-model_path(m, 1e-4)
+m1=Imp_model(exo, endo, p)
+model_path(m1, 1e-6)
 
-
-
-x=[n for n in 1:m.n]
-plot(x, m.endo.k)
-plot(x, m.endo.c)
-plot(x, m.exo.g)
-
-
-
-fig,axes = subplots(2,3,figsize=(10,5))
-
-ax = axes[1,1]
-ax[:plot](x, m.endo.k)
-#ax[:plot](x, zeros(m.n))
-ax = axes[1,2]
-ax[:plot](x, m.endo.c)
-#ax[:plot](x, zeros(m.n))
-ax = axes[1,3]
-ax[:plot](x, m.exo.g)
-#ax[:plot](x, zeros(m.n))
-ax = axes[2,1]
-ax[:plot](x, fprod)
-#ax[:plot](x, zeros(m.n))
-ax = axes[2,2]
-ax[:plot](x, m.endo.R)
-#ax[:plot](x, zeros(m.n))
-ax = axes[2,3]
-ax[:plot](x, m.endo.eta)
-#ax[:plot](x, zeros(m.n))
-
-fig[:canvas][:draw]()
-
-
-
-
+graph3(m1, mref, g)
 
 ############################################ Third part, 
 ############################################ second policy shock
@@ -250,38 +288,14 @@ tauc=[zeros(10);0.2*ones(10)]
 taun=zeros(20)
 g = 0.2*ones(20)
 
-
 p=Parameter()
 exo=exovariable(g,tauk,tauc,taun,p)
 endo=endovariable(exo)
-m=Imp_model(exo, endo, u, deru, invderu, f, derf, p)
+m2=Imp_model(exo, endo, p)
 
-model_path(m, 1e-4)
+model_path(m2, 1e-6)
 
-
-fig,axes = subplots(2,3,figsize=(10,5))
-
-ax = axes[1,1]
-ax[:plot](x, m.endo.k)
-#ax[:plot](x, zeros(m.n))
-ax = axes[1,2]
-ax[:plot](x, m.endo.c)
-#ax[:plot](x, zeros(m.n))
-ax = axes[1,3]
-ax[:plot](x, m.exo.tauc)
-#ax[:plot](x, zeros(m.n))
-ax = axes[2,1]
-ax[:plot](x, fprod)
-#ax[:plot](x, zeros(m.n))
-ax = axes[2,2]
-ax[:plot](x, m.endo.R)
-#ax[:plot](x, zeros(m.n))
-ax = axes[2,3]
-ax[:plot](x, m.endo.eta)
-#ax[:plot](x, zeros(m.n))
-
-fig[:canvas][:draw]()
-
+graph3(m2, mref, tauc)
 
 
 
@@ -300,34 +314,10 @@ g = 0.2*ones(20)
 p=Parameter()
 exo=exovariable(g,tauk,tauc,taun,p)
 endo=endovariable(exo)
-m=Imp_model(exo, endo, u, deru, invderu, f, derf, p)
+m3=Imp_model(exo, endo, p)
+model_path(m3, 1e-6)
 
-model_path(m, 1e-4)
-
-
-fig,axes = subplots(2,3,figsize=(10,5))
-
-ax = axes[1,1]
-ax[:plot](x, m.endo.k)
-#ax[:plot](x, zeros(m.n))
-ax = axes[1,2]
-ax[:plot](x, m.endo.c)
-#ax[:plot](x, zeros(m.n))
-ax = axes[1,3]
-ax[:plot](x, m.exo.tauc)
-#ax[:plot](x, zeros(m.n))
-ax = axes[2,1]
-ax[:plot](x, fprod)
-#ax[:plot](x, zeros(m.n))
-ax = axes[2,2]
-ax[:plot](x, m.endo.R)
-#ax[:plot](x, zeros(m.n))
-ax = axes[2,3]
-ax[:plot](x, m.endo.eta)
-#ax[:plot](x, zeros(m.n))
-
-fig[:canvas][:draw]()
-
+graph3(m3, mref, tauk)
 
 
 
@@ -347,53 +337,31 @@ g[10] = 0.4
 p=Parameter()
 exo=exovariable(g,tauk,tauc,taun,p)
 endo=endovariable(exo)
-m=Imp_model(exo, endo, u, deru, invderu, f, derf, p)
-model_path(m, 1e-4)
+m4=Imp_model(exo, endo, p)
+model_path(m4, 1e-6)
+
+graph3(m4, mref, g)
 
 
 
-x=[n for n in 1:m.n]
-plot(x, m.endo.k)
-plot(x, m.endo.c)
-plot(x, m.exo.g)
+############################################ Sixth part, 
+############################################ Fifth policy shock
+## White-noisy government spending
+
+g=[rand(10);0.2*ones(10)]
+
+tauk=zeros(20)
+tauc=zeros(20)
+taun=zeros(20)
 
 
+p=Parameter()
+exo=exovariable(g,tauk,tauc,taun,p)
+endo=endovariable(exo)
+m5=Imp_model(exo, endo, p)
+model_path(m5, 1e-6)
 
-fig,axes = subplots(2,3,figsize=(10,5))
-
-ax = axes[1,1]
-ax[:plot](x, m.endo.k)
-#ax[:plot](x, zeros(m.n))
-ax = axes[1,2]
-ax[:plot](x, m.endo.c)
-#ax[:plot](x, zeros(m.n))
-ax = axes[1,3]
-ax[:plot](x, m.exo.g)
-#ax[:plot](x, zeros(m.n))
-ax = axes[2,1]
-ax[:plot](x, fprod)
-#ax[:plot](x, zeros(m.n))
-ax = axes[2,2]
-ax[:plot](x, m.endo.R)
-#ax[:plot](x, zeros(m.n))
-ax = axes[2,3]
-ax[:plot](x, m.endo.eta)
-#ax[:plot](x, zeros(m.n))
-
-fig[:canvas][:draw]()
-
-
-
-
-
-
-
-
-
-
-
-
-
+graph3(m5, mref, g)
 
 
 #### other drafts, to be cleaned

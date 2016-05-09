@@ -4,7 +4,6 @@ module FiscalPolicyModel
 
 export Parameter, exovariable, endovariable, Imp_model, loop_c_k_path, shootingalgorithm, model_path
 
-using NLopt, PyPlot
 using Roots, Distributions
 
 function Parameter()
