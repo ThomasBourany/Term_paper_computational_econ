@@ -282,10 +282,12 @@ model_path(m1, 1e-6)
 
 graph3(m1, mref, g)
 
+graph1(m1)
+
+
 ############################################ Third part, 
 ############################################ second policy shock
 ## Third, increase once-for-all the consumption tax at period 10. 
-
 
 
 tauk=zeros(20)
@@ -302,6 +304,7 @@ model_path(m2, 1e-6)
 
 graph3(m2, mref, tauc)
 
+graph1(m2)
 
 
 
