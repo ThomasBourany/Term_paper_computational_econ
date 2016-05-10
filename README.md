@@ -24,23 +24,27 @@ $ delta + rho/(1-tau_k) = f'(k_bar) $
 
 From Ljungqvist & Sargent, the method to solve this model is the following : 
 
-1. Solve (11.6.4) for the terminal steady-state k that is associated with the permanent policy vector z=(g, tau_c, tau_k) i.e., find the solution of (11.6.7).
-2. Select a large time index S >> T and guess an initial consumption rate c0 . Compute u′(c0) and solve (11.6.1) for k1 .
-3. For t = 0, use (11.6.3) to solve for u′(ct+1). Then invert u′ and compute ct+1 . Use ( 11.6.1 ) to compute kt+2 .
-4. Iterate on step 3 to compute candidate values kˆt,t = 1,...,S.
-5. Compute kˆS −k.
-6. If kˆS > k, raise c0 and compute a new kˆt,t = 1,...,S.
-7 . I f kˆ S < k , lower c 0 .
-8. In this way, search for a value of c0 that makes kˆS ≈ k .
-9. Compute the lump-sum taxes that satisfies the government budget constraint at
-equality.
+1. Solve (11.6.4) for the terminal steady-state k that is associated with the permanent policy vector z=(g, tau_c, tau_k) i.e., find the solution of (11.6.7). \
+2. Select a large time index S >> T and guess an initial consumption rate c0 . Compute u′(c0) and solve (11.6.1) for k1 . \
+3. For t = 0, use (11.6.3) to solve for u′(ct+1). Then invert u' and compute ct+1 . Use (11.6.1) to compute kt+2 . \
+4. Iterate on step 3 to compute candidate values kˆt,t = 1,...,S. \
+5. Compute kˆS −k. \
+6. If kˆS > k, raise c0 and compute a new kˆt,t = 1,...,S. \
+7 . I f kˆ S < k , lower c0 \
+8. In this way, search for a value of c0 that makes kˆS ≈ k \
+9. Compute the lump-sum taxes that satisfies the government budget constraint at equality.\
 
 
-- This is only a draft, more documentation will be provided in the following days, about the following points
+- This is only a draft, more documentation will be provided in the following days, about the following points: 
+
 - Why the "shooting algorithm?"
 - A description of the convergence of the algorithm (shown in the graphs 1, 2 and thoses accompanying the policy experiment) and its accuracy
-- A description of the implementation of "policy experiments" concerning spending and taxes, and computation of the path and its display in Impulse-Response function. 
-
+- A description of the implementation of "policy experiments" concerning spending and taxes, and computation of the path and displayed in Impulse-Response function. 
+\
+\
+- The code need to be improved:
+- Tests to be added
+- More policy experiments
 
 
 
