@@ -166,8 +166,8 @@ end
 end 
 
 #### Draw the graph
-graph1(mref)
-graph2(mref)
+#graph1(mref)
+#graph2(mref)
 
 
 ############################################
@@ -273,6 +273,7 @@ end
 ## Second, increase once-for-all in g at period 10. 
 
 function policy1()
+mref = modelref()
 
 tauk=zeros(20)
 tauc=zeros(20)
@@ -296,7 +297,7 @@ end
 ## Third, increase once-for-all the consumption tax at period 10. 
 
 function policy2()
-
+mref = modelref()
 tauk=zeros(20)
 tauc=[zeros(10);0.2*ones(10)]
 taun=zeros(20)
@@ -321,7 +322,7 @@ end
 ## Fourth, increase once-for-all the capital tax at period 10. 
 
 function policy3()
-
+mref = modelref()
 tauc=zeros(20)
 tauk=[zeros(10);0.2*ones(10)]
 taun=zeros(20)
@@ -345,7 +346,7 @@ end
 ## Fifth, increase, one time-pulse of government spending at period 10
 
 function policy4()
-
+mref = modelref()
 tauk=zeros(20)
 tauc=zeros(20)
 taun=zeros(20)
@@ -367,7 +368,7 @@ end
 ## White-noisy government spending
 
 function policy5()
-
+mref = modelref()
 g=[0.7rand(19);0.2]
 
 tauk=zeros(20)
@@ -390,7 +391,7 @@ end
 ## White-noisy consumption tax
 
 function policy6()
-
+mref = modelref()
 tauc=[0.7rand(19);0.2]
 g = 0.2*ones(20)
 tauk=zeros(20)
@@ -413,9 +414,12 @@ end
 ## Concave vs. convexe increasing spending
 
 function policy7()
+mref = modelref()
+
 
 h1(x)= (0.00366313)*exp(x/5)
 h2(x)= 0.2(1-exp(-0.2x) + 0.000915782*x)
+g = zeros(20)
 g1 = zeros(20)
 g2 = zeros(20)
 
@@ -444,6 +448,9 @@ graph3(m7, mref, g)
 
 # 2# concave increase
 
+tauk=zeros(20)
+tauc=zeros(20)
+taun=zeros(20)
 p=Parameter()
 exo2=exovariable(g2,tauk,tauc,taun,p)
 endo2=endovariable(exo2)
@@ -459,6 +466,55 @@ end
 
 
 
+function policy8()
+
+mref = modelref()
+h1(x)= (0.00366313)*exp(x/5)
+h2(x)= 0.2(1-exp(-0.2x) + 0.000915782*x)
+tauc =zeros(20)
+tauc1 = zeros(20)
+tauc2 = zeros(20)
+
+for i in 1:20
+tauc1[i] = h1(i)
+tauc2[i] = h2(i)
+end 
+tauc1[end] = round(tauc1[end], 5)
+tauc2[end] = round(tauc2[end], 5)
+
+tauk=zeros(20)
+g=0.2*ones(20)
+taun=zeros(20)
+
+# 1# convex increase 
+
+p=Parameter()
+exo1=exovariable(g,tauk,tauc1,taun,p)
+endo1=endovariable(exo1)
+m9=Imp_model(exo1, endo1, p)
+model_path(m9, 1e-6)
+tauc = tauc1
+graph3(m9, mref, tauc)
+
+
+# 2# concave increase
+tauk=zeros(20)
+g=0.2*ones(20)
+taun=zeros(20)
+p=Parameter()
+exo2=exovariable(g,tauk,tauc2,taun,p)
+endo2=endovariable(exo2)
+m10=Imp_model(exo2, endo2, p)
+model_path(m10, 1e-6)
+tauc = tauc2
+graph3(m10, mref, tauc)
+
+end 
+
+
+
+
+
     function runAll()
     
 modelref()
@@ -469,6 +525,7 @@ policy4()
 policy5()
 policy6()
 policy7()
+policy8()
 
         ok = input("enter y to close this session.")
         if ok == "y"
