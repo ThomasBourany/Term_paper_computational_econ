@@ -10,6 +10,7 @@ using PyPlot
 ############################################ Preliminary
 ############################################
 ### Compute the steady state value, without policy experiment. 
+function modelref()
 
 g = 0.2*ones(20)
 tauk=zeros(20)
@@ -24,7 +25,9 @@ m=Imp_model(exo, endo, p)
 model_path(m, 1e-6)
 
 mref=Imp_model(m.exo, m.endo, m.p)
+return mref
 
+end
 
 ############################################
 ### Plot of convergence of the shooting algorithm, starting with initial condition below the steady state
@@ -269,6 +272,8 @@ end
 ############################################ First policy shock
 ## Second, increase once-for-all in g at period 10. 
 
+function policy1()
+
 tauk=zeros(20)
 tauc=zeros(20)
 taun=zeros(20)
@@ -284,11 +289,13 @@ graph3(m1, mref, g)
 
 graph1(m1)
 
+end
 
 ############################################ Third part, 
 ############################################ second policy shock
 ## Third, increase once-for-all the consumption tax at period 10. 
 
+function policy2()
 
 tauk=zeros(20)
 tauc=[zeros(10);0.2*ones(10)]
@@ -306,12 +313,14 @@ graph3(m2, mref, tauc)
 
 graph1(m2)
 
-
+end 
 
 
 ############################################ Fourth part, 
 ############################################ Third policy shock
 ## Fourth, increase once-for-all the capital tax at period 10. 
+
+function policy3()
 
 tauc=zeros(20)
 tauk=[zeros(10);0.2*ones(10)]
@@ -328,13 +337,14 @@ model_path(m3, 1e-6)
 graph3(m3, mref, tauk)
 
 
-
+end 
 
 
 ############################################ Fifth part, 
 ############################################ Fourth policy shock
 ## Fifth, increase, one time-pulse of government spending at period 10
 
+function policy4()
 
 tauk=zeros(20)
 tauc=zeros(20)
@@ -350,11 +360,13 @@ model_path(m4, 1e-6)
 
 graph3(m4, mref, g)
 
-
+end 
 
 ############################################ Sixth part, 
 ############################################ Fifth policy shock
 ## White-noisy government spending
+
+function policy5()
 
 g=[0.7rand(19);0.2]
 
@@ -371,11 +383,13 @@ model_path(m5, 1e-6)
 
 graph3(m5, mref, g)
 
-
+end 
 
 ############################################ Seventh part, 
 ############################################ Sixth policy shock
 ## White-noisy consumption tax
+
+function policy6()
 
 tauc=[0.7rand(19);0.2]
 g = 0.2*ones(20)
@@ -390,6 +404,79 @@ m6=Imp_model(exo, endo, p)
 model_path(m6, 1e-6)
 
 graph3(m6, mref, tauc)
+
+end
+
+
+############################################ Eighth part, 
+############################################ Seventh & Eighth policy shock
+## Concave vs. convexe increasing spending
+
+function policy7()
+
+h1(x)= (0.00366313)*exp(x/5)
+h2(x)= 0.2(1-exp(-0.2x) + 0.000915782*x)
+g1 = zeros(20)
+g2 = zeros(20)
+
+for i in 1:20
+g1[i] = h1(i)
+g2[i] = h2(i)
+end 
+g1[end] = round(g1[end], 5)
+g2[end] = round(g2[end], 5)
+
+
+tauk=zeros(20)
+tauc=zeros(20)
+taun=zeros(20)
+
+# 1# convex increase 
+
+p=Parameter()
+exo1=exovariable(g1,tauk,tauc,taun,p)
+endo1=endovariable(exo1)
+m7=Imp_model(exo1, endo1, p)
+model_path(m7, 1e-6)
+g=g1
+graph3(m7, mref, g)
+
+
+# 2# concave increase
+
+p=Parameter()
+exo2=exovariable(g2,tauk,tauc,taun,p)
+endo2=endovariable(exo2)
+m8=Imp_model(exo2, endo2, p)
+model_path(m8, 1e-6)
+g = g2
+graph3(m8, mref, g)
+
+end 
+
+
+
+
+
+
+    function runAll()
+    
+modelref()
+policy1()
+policy2()
+policy3()
+policy4()
+policy5()
+policy6()
+policy7()
+
+        ok = input("enter y to close this session.")
+        if ok == "y"
+            quit()
+        end
+    end
+
+end 
 
 
 
